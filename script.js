@@ -1,17 +1,15 @@
-const API = '';
-let games = [];
+let games = [
+  { id: 1, title: "Cyberpunk 2077", price: 1200, thumb: "https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg", desc: "RPG від CD Projekt" },
+  { id: 2, title: "GTA V", price: 800, thumb: "https://cdn.cloudflare.steamstatic.com/steam/apps/271590/header.jpg", desc: "Класичний екшен" },
+  { id: 3, title: "The Witcher 3", price: 900, thumb: "https://cdn.cloudflare.steamstatic.com/steam/apps/292030/header.jpg", desc: "Фентезі RPG" }
+];
+
 let state = { query: '', sort: 'popular', cart: {}, token: localStorage.getItem('token') || null };
 
 const storeEl = document.getElementById('store');
 const cartList = document.getElementById('cartList');
 const cartTotal = document.getElementById('cartTotal');
 const cartCount = document.getElementById('cartCount');
-
-async function fetchGames() {
-  const res = await fetch('/api/games');
-  games = await res.json();
-  render();
-}
 
 function render() {
   renderStore();
@@ -83,46 +81,20 @@ function closeModal(){ document.getElementById('modalBackdrop').classList.add('h
 document.getElementById('modalClose').addEventListener('click', closeModal);
 document.getElementById('modalBackdrop').addEventListener('click', (e)=>{ if(e.target.id==='modalBackdrop') closeModal(); });
 
-document.getElementById('checkout').addEventListener('click', async ()=>{
-  if (!state.token) { alert('Потрібно увійти, щоб оформити замовлення'); return; }
-  try {
-    const res = await fetch('/api/checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + state.token },
-      body: JSON.stringify(state.cart)
-    });
-    const data = await res.json();
-    if (res.ok) {
-      alert('Замовлення оформлено, id: ' + data.orderId);
-      state.cart = {}; renderCart();
-    } else {
-      alert(data.message || 'Помилка замовлення');
-      if (res.status === 401) { localStorage.removeItem('token'); state.token = null; }
-    }
-  } catch (err) {
-    alert('Помилка мережі');
-  }
+document.getElementById('checkout').addEventListener('click', ()=>{
+  if (!Object.keys(state.cart).length) return alert('Кошик порожній!');
+  alert('Замовлення оформлено! Дякуємо ❤️');
+  state.cart = {}; renderCart();
 });
 
-function openAuth(mode) {
-  const username = prompt(mode === 'login' ? 'Введіть імʼя користувача' : 'Придумайте імʼя');
+document.getElementById('loginBtn').addEventListener('click', ()=>{
+  const username = prompt('Введіть імʼя користувача');
   if (!username) return;
-  const password = prompt('Введіть пароль');
-  if (!password) return;
-  fetch(`/${mode}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
-  }).then(r => r.json()).then(d => {
-    if (d.token) {
-      state.token = d.token; localStorage.setItem('token', d.token); alert('Успішно!');
-    } else {
-      alert(d.message || 'Помилка');
-    }
-  }).catch(()=>alert('Помилка мережі'));
-}
-document.getElementById('loginBtn').addEventListener('click', ()=>openAuth('login'));
-document.getElementById('registerBtn').addEventListener('click', ()=>openAuth('register'));
-document.getElementById('cartBtn').addEventListener('click', ()=>document.querySelector('.cart-panel').scrollIntoView({behavior:'smooth'}));
+  localStorage.setItem('token', 'mocktoken');
+  alert('Вхід виконано!');
+});
+document.getElementById('registerBtn').addEventListener('click', ()=>{
+  alert('Реєстрація успішна!');
+});
 
-fetchGames();
+render();
